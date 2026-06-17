@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RESPARK — What's Keeping You Disconnected?</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    background: linear-gradient(160deg, #1a1208 0%, #2d1f0a 40%, #1a1208 100%);
+    color: #f0e6d3;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 16px 60px;
+  }
+  .sans { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  .header {
+    text-align: center;
+    padding: 40px 0 20px;
+  }
+  .header .fire { font-size: 28px; margin-bottom: 6px; }
+  .header .brand {
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #C9A96E;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .header .sub {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #8a7a62;
+  }
+  .wrap { width: 100%; max-width: 600px; }
+
+  .intro { text-align: center; margin-bottom: 32px; padding: 0 8px; }
+  .intro h1 {
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: normal;
+    line-height: 1.3;
+    color: #f0e6d3;
+    margin: 0 0 16px;
+  }
+  .intro h1 em { color: #C9A96E; font-style: normal; }
+  .intro p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #b8a88a;
+    margin: 0 auto;
+    max-width: 460px;
+  }
+
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #8a7a62;
+    letter-spacing: 1px;
+  }
+  .progress-track {
+    height: 3px;
+    background: #2d2416;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #8a5c2a, #C9A96E);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,169,110,0.2);
+    border-radius: 16px;
+    padding: 32px 28px;
+  }
+  .question-text {
+    font-size: clamp(16px, 3vw, 20px);
+    line-height: 1.5;
+    color: #f0e6d3;
+    margin: 0 0 28px;
+    font-style: italic;
+  }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: #c0a880;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+  }
+  .option-btn.selected {
+    background: rgba(201,169,110,0.18);
+    border: 1px solid #C9A96E;
+    color: #f0e6d3;
+  }
+  .radio-dot {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 50%;
+    border: 1.5px solid #5a4a32;
+    background: transparent;
+    margin-top: 1px;
+    transition: all 0.2s ease;
+  }
+  .option-btn.selected .radio-dot {
+    border: 5px solid #C9A96E;
+    background: #2d1f0a;
+  }
+
+  .next-btn {
+    margin-top: 24px;
+    width: 100%;
+    padding: 16px;
+    background: rgba(255,255,255,0.05);
+    border: none;
+    border-radius: 10px;
+    color: #5a4a32;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+  }
+  .next-btn.active {
+    background: linear-gradient(135deg, #8a5c2a, #C9A96E);
+    color: #1a1208;
+    cursor: pointer;
+  }
+
+  /* Results */
+  .result-card {
+    background: rgba(255,255,255,0.04);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .result-header {
+    padding: 36px 28px 28px;
+    text-align: center;
+  }
+  .result-header .emoji { font-size: 40px; margin-bottom: 12px; }
+  .result-header .label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .result-header h2 {
+    font-size: clamp(24px, 5vw, 32px);
+    font-weight: normal;
+    color: #f0e6d3;
+    margin: 0 0 16px;
+    line-height: 1.2;
+  }
+  .result-header .headline {
+    font-size: clamp(15px, 3vw, 18px);
+    font-style: italic;
+    margin: 0;
+    line-height: 1.5;
+  }
+  .result-body { padding: 28px; }
+  .result-body .desc {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #c0a880;
+    margin: 0 0 24px;
+  }
+  .divider { height: 1px; margin: 24px 0; }
+  .invitation-box {
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 28px;
+  }
+  .invitation-box .label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .invitation-box p {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #f0e6d3;
+    margin: 0;
+    font-style: italic;
+  }
+  .cta-wrap { text-align: center; }
+  .cta-wrap .ready-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #8a7a62;
+    margin-bottom: 16px;
+  }
+  .cta-btn {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    border: none;
+    border-radius: 10px;
+    color: #1a1208;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .retake-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 14px;
+    width: 100%;
+    color: #8a7a62;
+    font-size: 13px;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+
+  .map-card {
+    margin-top: 24px;
+    padding: 24px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+  }
+  .map-card .map-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #8a7a62;
+    margin-bottom: 16px;
+  }
+  .map-row { margin-bottom: 12px; }
+  .map-row-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .map-row-top .name { font-size: 13px; color: #c0a880; }
+  .map-row-top .pct { font-size: 12px; color: #8a7a62; }
+  .map-track {
+    height: 4px;
+    background: #2d2416;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .map-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="fire">🔥</div>
+  <div class="brand">RESPARK</div>
+  <div class="sub">The Campfire Quiz</div>
+</div>
+
+<div class="wrap">
+
+  <!-- QUIZ VIEW -->
+  <div id="quizView">
+
+    <div id="introBlock" class="intro">
+      <h1>What's keeping you<br><em>disconnected?</em></h1>
+      <p class="sans">20 honest questions. Your results tell you exactly where your disconnection runs deepest — and what it will take to reignite.</p>
+    </div>
+
+    <div class="progress-row sans">
+      <span id="progressLabel">Question 1 of 20</span>
+      <span id="progressPct">0% complete</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="card">
+      <p class="question-text" id="questionText"></p>
+      <div class="options sans" id="optionsContainer"></div>
+      <button class="next-btn sans" id="nextBtn" disabled>Next Question →</button>
+    </div>
+
+  </div>
+
+  <!-- RESULTS VIEW -->
+  <div id="resultsView" class="hidden">
+
+    <div class="result-card" id="resultCard">
+      <div class="result-header" id="resultHeader">
+        <div class="emoji" id="resultEmoji"></div>
+        <div class="label sans" id="resultLabel">Your Disconnection Pattern</div>
+        <h2 id="resultName"></h2>
+        <p class="headline" id="resultHeadline"></p>
+      </div>
+
+      <div class="result-body">
+        <p class="desc sans" id="resultDesc"></p>
+
+        <div class="divider" id="resultDivider"></div>
+
+        <div class="invitation-box sans" id="invitationBox">
+          <div class="label" id="invitationLabel">Your Invitation</div>
+          <p id="invitationText"></p>
+        </div>
+
+        <div class="cta-wrap">
+          <div class="ready-label sans">Ready to reignite?</div>
+          <a href="https://www.skool.com/get-lifted-life-3885/about" target="_blank" rel="noopener noreferrer" class="cta-btn sans" id="ctaBtn">
+            Join the RESPARK Community →
+          </a>
+          <button class="retake-btn sans" id="retakeBtn">Retake the quiz</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-card sans">
+      <div class="map-label">Your Full Disconnection Map</div>
+      <div id="mapRows"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const questions = [
+    { pillar: "self", text: "When someone asks who you are outside of your work or roles, you…", options: [
+      { text: "Answer confidently — you know yourself well", points: { self: 0 } },
+      { text: "Give a polished answer but feel vague inside", points: { self: 2 } },
+      { text: "Deflect or change the subject", points: { self: 3 } },
+      { text: "Genuinely don't know how to answer", points: { self: 4 } },
+    ]},
+    { pillar: "emotions", text: "When stress spikes, your most honest response is…", options: [
+      { text: "I notice it and work through it fairly well", points: { emotions: 0 } },
+      { text: "I push through it and deal with it later", points: { emotions: 3 } },
+      { text: "I shut down or go quiet", points: { emotions: 3 } },
+      { text: "I snap, spiral, or lose control", points: { emotions: 4 } },
+    ]},
+    { pillar: "beliefs", text: "The story you most often tell yourself about why you're not where you want to be is…", options: [
+      { text: "I'm still figuring it out — and that's okay", points: { beliefs: 0 } },
+      { text: "I need to work harder or smarter", points: { beliefs: 2 } },
+      { text: "I'm not quite ready yet", points: { beliefs: 3 } },
+      { text: "I keep getting in my own way", points: { beliefs: 4 } },
+    ]},
+    { pillar: "relationships", text: "When conflict arises in a close relationship, you tend to…", options: [
+      { text: "Address it directly and work through it", points: { relationships: 0 } },
+      { text: "Bring it up carefully but back down when it gets hard", points: { relationships: 2 } },
+      { text: "Avoid it until it blows over", points: { relationships: 3 } },
+      { text: "Explode, then regret it later", points: { relationships: 4 } },
+    ]},
+    { pillar: "integration", text: "Looking at your life right now, the area that feels most neglected is…", options: [
+      { text: "Everything feels fairly in balance", points: { integration: 0 } },
+      { text: "One area (health, marriage, or purpose)", points: { integration: 2 } },
+      { text: "Two or three areas are clearly suffering", points: { integration: 3 } },
+      { text: "Most of my life feels compartmentalized", points: { integration: 4 } },
+    ]},
+    { pillar: "self", text: "How often do you make decisions that actually reflect your values?", options: [
+      { text: "Consistently — I know my values and lead with them", points: { self: 0 } },
+      { text: "Often, but sometimes I compromise under pressure", points: { self: 2 } },
+      { text: "Rarely — I'm usually reacting to what others need", points: { self: 3 } },
+      { text: "I'm not sure I know what my values are", points: { self: 4 } },
+    ]},
+    { pillar: "emotions", text: "Burnout for you looks like…", options: [
+      { text: "I catch it early and course-correct", points: { emotions: 0 } },
+      { text: "I wear it like a badge and keep going", points: { emotions: 3 } },
+      { text: "I numb out — Netflix, scrolling, food, etc.", points: { emotions: 3 } },
+      { text: "I crash completely and can't function", points: { emotions: 4 } },
+    ]},
+    { pillar: "beliefs", text: "Which phrase most closely matches your inner voice when things go wrong?", options: [
+      { text: "This is hard, but I can handle it", points: { beliefs: 0 } },
+      { text: "What could I have done differently?", points: { beliefs: 1 } },
+      { text: "I knew this would happen to me", points: { beliefs: 3 } },
+      { text: "I'm not sure I'm cut out for this", points: { beliefs: 4 } },
+    ]},
+    { pillar: "relationships", text: "How would you describe the level of real intimacy in your closest relationship?", options: [
+      { text: "Deep — we know each other fully and communicate well", points: { relationships: 0 } },
+      { text: "Good on the surface, but some things go unsaid", points: { relationships: 2 } },
+      { text: "We're functioning but growing apart", points: { relationships: 3 } },
+      { text: "I feel genuinely alone even when we're together", points: { relationships: 4 } },
+    ]},
+    { pillar: "integration", text: "When your business or career is thriving, your relationship tends to…", options: [
+      { text: "Thrive too — they reinforce each other", points: { integration: 0 } },
+      { text: "Stay okay but gets less attention", points: { integration: 2 } },
+      { text: "Suffer noticeably", points: { integration: 3 } },
+      { text: "Take a serious hit every time", points: { integration: 4 } },
+    ]},
+    { pillar: "self", text: "When you imagine the life you actually want (not the one you're supposed to want), you feel…", options: [
+      { text: "Excited — I'm building toward it", points: { self: 0 } },
+      { text: "A quiet longing — I want it but feel far away", points: { self: 2 } },
+      { text: "Guilty — like I'm being ungrateful", points: { self: 3 } },
+      { text: "Blank — I've stopped letting myself want things", points: { self: 4 } },
+    ]},
+    { pillar: "emotions", text: "When someone pushes your buttons, your first instinct is…", options: [
+      { text: "Pause, feel it, then respond intentionally", points: { emotions: 0 } },
+      { text: "Hold it together in the moment, stew later", points: { emotions: 2 } },
+      { text: "Go quiet and shut them out", points: { emotions: 3 } },
+      { text: "React fast in a way I often regret", points: { emotions: 4 } },
+    ]},
+    { pillar: "beliefs", text: "How often do you feel like an imposter — like someone will eventually figure out you don't have it together?", options: [
+      { text: "Rarely — I know my value", points: { beliefs: 0 } },
+      { text: "Sometimes, especially when things are going well", points: { beliefs: 2 } },
+      { text: "Often — it's a constant background hum", points: { beliefs: 3 } },
+      { text: "Almost always — I'm waiting to be found out", points: { beliefs: 4 } },
+    ]},
+    { pillar: "relationships", text: "How comfortable are you saying what you actually need from the people closest to you?", options: [
+      { text: "Very — I ask for what I need directly", points: { relationships: 0 } },
+      { text: "Sometimes, but only if I think they'll be okay with it", points: { relationships: 2 } },
+      { text: "Rarely — I usually figure it out alone", points: { relationships: 3 } },
+      { text: "Never — I don't want to be a burden", points: { relationships: 4 } },
+    ]},
+    { pillar: "integration", text: "At the end of most days, you feel…", options: [
+      { text: "Satisfied — I did meaningful things that mattered", points: { integration: 0 } },
+      { text: "Tired but okay — just managing the load", points: { integration: 2 } },
+      { text: "Drained — like I gave everyone else my energy", points: { integration: 3 } },
+      { text: "Empty — like I lived someone else's day", points: { integration: 4 } },
+    ]},
+    { pillar: "self", text: "How often do you do something just because YOU want to — not because it's productive or expected?", options: [
+      { text: "Regularly — rest and joy are part of my rhythm", points: { self: 0 } },
+      { text: "Occasionally, but with guilt", points: { self: 2 } },
+      { text: "Rarely — I can't justify the time", points: { self: 3 } },
+      { text: "Almost never — I don't even know what I'd do", points: { self: 4 } },
+    ]},
+    { pillar: "emotions", text: "How do you handle difficult emotions like grief, shame, or deep fear?", options: [
+      { text: "I feel them, process them, and they move through me", points: { emotions: 0 } },
+      { text: "I deal with the surface, but avoid the deeper layers", points: { emotions: 2 } },
+      { text: "I stay busy so I don't have to feel them", points: { emotions: 3 } },
+      { text: "They stay buried until something breaks them open", points: { emotions: 4 } },
+    ]},
+    { pillar: "beliefs", text: "When you think about being truly seen — vulnerabilities and all — you feel…", options: [
+      { text: "Safe — I trust the right people with the real me", points: { beliefs: 0 } },
+      { text: "Cautiously open — I pick and choose carefully", points: { beliefs: 1 } },
+      { text: "Resistant — being known feels risky", points: { beliefs: 3 } },
+      { text: "Terrified — I've worked hard to make sure no one sees everything", points: { beliefs: 4 } },
+    ]},
+    { pillar: "relationships", text: "The last time there was real tension with someone important to you, it was resolved by…", options: [
+      { text: "An honest conversation that brought us closer", points: { relationships: 0 } },
+      { text: "Time — it just kind of faded", points: { relationships: 2 } },
+      { text: "One of us caving to keep the peace", points: { relationships: 3 } },
+      { text: "It still hasn't been resolved", points: { relationships: 4 } },
+    ]},
+    { pillar: "integration", text: "If you're honest, the version of life you're living right now vs. the version you want looks like…", options: [
+      { text: "Pretty close — I'm living with intention", points: { integration: 0 } },
+      { text: "A gap I'm aware of and working to close", points: { integration: 2 } },
+      { text: "A significant distance I don't know how to bridge", points: { integration: 3 } },
+      { text: "Two completely different lives", points: { integration: 4 } },
+    ]},
+  ];
+
+  const archetypes = {
+    self: {
+      name: "The Lost Leader",
+      emoji: "🪞",
+      headline: "You've built a life — but somewhere along the way, you lost yourself in it.",
+      description: "Your disconnection runs deepest at the identity level. You're capable, accomplished, even admired — but when the noise quiets down, there's a hollow question underneath it all: who am I when I'm not producing? You've been so focused on building that you haven't had time to ask if the person doing the building is still someone you recognize. The good news? You haven't lost yourself. You just haven't looked inward in a while.",
+      invitation: "Your RESPARK begins with one question: who were you before the world told you who to be?",
+      color: "#C9A96E",
+    },
+    emotions: {
+      name: "The High-Functioning Avoider",
+      emoji: "🌊",
+      headline: "You can hold it together for everyone — except yourself.",
+      description: "Your disconnection lives in your body. You've gotten very good at managing your emotions rather than moving through them. You keep the peace, push through the hard days, and appear steady — but underneath, there's a backlog of feelings that never got processed. The burnout you keep pushing past, the reactions you regret, the numbness that showed up when the feeling got too loud — these aren't character flaws. They're the cost of never being taught how to actually feel without falling apart.",
+      invitation: "Your RESPARK begins with learning to trust what you feel — not manage it.",
+      color: "#7EAFC4",
+    },
+    beliefs: {
+      name: "The Quiet Saboteur",
+      emoji: "🔒",
+      headline: "There's a story running underneath your life — and it isn't yours.",
+      description: "Your disconnection is rooted in the operating system you've been running on since childhood. The imposter voice. The waiting to be found out. The way success somehow makes you more anxious instead of less. You've worked hard to build something real, but there's a part of you that keeps whispering you don't deserve it, aren't ready for it, or will inevitably lose it. That voice isn't truth. It's conditioning. And it can be rewritten.",
+      invitation: "Your RESPARK begins with asking: whose story am I actually living?",
+      color: "#A67FB5",
+    },
+    relationships: {
+      name: "The Lonely in the Room",
+      emoji: "🔥",
+      headline: "You're surrounded by people — and still feel profoundly alone.",
+      description: "Your disconnection is most painful in the spaces between you and the people who matter most. You know how to be close on the surface. You know how to function as a partner, a parent, a leader. But there's a persistent feeling that the real conversations never quite happen — that the things that actually matter stay unsaid, that conflict gets avoided until it becomes resentment, that intimacy has quietly been replaced by logistics. Real connection is possible. You just haven't had a safe enough fire to sit around.",
+      invitation: "Your RESPARK begins with the truth you've been waiting for permission to say.",
+      color: "#D4866A",
+    },
+    integration: {
+      name: "The Compartmentalizer",
+      emoji: "🧩",
+      headline: "Every part of your life is doing okay — except they're not talking to each other.",
+      description: "Your disconnection isn't in any one area — it's in the seams between them all. Your business succeeds while your marriage quietly pays the price. Your health suffers when work scales. Your purpose gets shelved when the family needs you. You're excellent at keeping things running, but the version of your life where everything actually works together — where success and love and purpose reinforce each other instead of compete — still feels just out of reach. That integration isn't a fantasy. It's a skill.",
+      invitation: "Your RESPARK begins with building a life where all of you shows up — not just the parts the moment demands.",
+      color: "#7EB89C",
+    },
+  };
+
+  const labels = { self: "Self & Identity", emotions: "Emotional Regulation", beliefs: "Beliefs & Patterns", relationships: "Relationships", integration: "Integrated Living" };
+
+  let current = 0;
+  let selectedOption = null;
+  let scores = { self: 0, emotions: 0, beliefs: 0, relationships: 0, integration: 0 };
+
+  const introBlock = document.getElementById('introBlock');
+  const progressLabel = document.getElementById('progressLabel');
+  const progressPct = document.getElementById('progressPct');
+  const progressFill = document.getElementById('progressFill');
+  const questionText = document.getElementById('questionText');
+  const optionsContainer = document.getElementById('optionsContainer');
+  const nextBtn = document.getElementById('nextBtn');
+  const quizView = document.getElementById('quizView');
+  const resultsView = document.getElementById('resultsView');
+
+  function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1,3), 16);
+    const g = parseInt(hex.slice(3,5), 16);
+    const b = parseInt(hex.slice(5,7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function renderQuestion() {
+    const q = questions[current];
+    selectedOption = null;
+
+    introBlock.classList.toggle('hidden', current !== 0);
+
+    progressLabel.textContent = `Question ${current + 1} of ${questions.length}`;
+    const progress = (current / questions.length) * 100;
+    progressPct.textContent = `${Math.round(progress)}% complete`;
+    progressFill.style.width = `${progress}%`;
+
+    questionText.textContent = `"${q.text}"`;
+
+    optionsContainer.innerHTML = '';
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<span class="radio-dot"></span><span>${opt.text}</span>`;
+      btn.addEventListener('click', () => selectOption(i, btn));
+      optionsContainer.appendChild(btn);
+    });
+
+    nextBtn.disabled = true;
+    nextBtn.classList.remove('active');
+    nextBtn.textContent = (current + 1 === questions.length) ? 'See My Results →' : 'Next Question →';
+  }
+
+  function selectOption(index, btnEl) {
+    selectedOption = questions[current].options[index];
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btnEl.classList.add('selected');
+    nextBtn.disabled = false;
+    nextBtn.classList.add('active');
+  }
+
+  nextBtn.addEventListener('click', () => {
+    if (!selectedOption) return;
+    Object.entries(selectedOption.points).forEach(([key, val]) => {
+      scores[key] = (scores[key] || 0) + val;
+    });
+
+    if (current + 1 < questions.length) {
+      current++;
+      renderQuestion();
+    } else {
+      showResults();
+    }
+  });
+
+  function showResults() {
+    const topKey = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+    const result = archetypes[topKey];
+
+    quizView.classList.add('hidden');
+    resultsView.classList.remove('hidden');
+
+    document.getElementById('resultEmoji').textContent = result.emoji;
+    document.getElementById('resultName').textContent = result.name;
+    document.getElementById('resultHeadline').textContent = `"${result.headline}"`;
+    document.getElementById('resultDesc').textContent = result.description;
+    document.getElementById('invitationText').textContent = result.invitation;
+
+    const resultHeader = document.getElementById('resultHeader');
+    resultHeader.style.background = `linear-gradient(135deg, ${hexToRgba(result.color, 0.13)}, ${hexToRgba(result.color, 0.07)})`;
+    resultHeader.style.borderBottom = `1px solid ${hexToRgba(result.color, 0.2)}`;
+
+    document.getElementById('resultLabel').style.color = result.color;
+    document.getElementById('resultHeadline').style.color = result.color;
+
+    document.getElementById('resultCard').style.border = `1px solid ${hexToRgba(result.color, 0.27)}`;
+
+    document.getElementById('resultDivider').style.background = `linear-gradient(90deg, transparent, ${hexToRgba(result.color, 0.27)}, transparent)`;
+
+    const invitationBox = document.getElementById('invitationBox');
+    invitationBox.style.background = hexToRgba(result.color, 0.07);
+    invitationBox.style.border = `1px solid ${hexToRgba(result.color, 0.2)}`;
+    document.getElementById('invitationLabel').style.color = result.color;
+
+    const ctaBtn = document.getElementById('ctaBtn');
+    ctaBtn.style.background = `linear-gradient(135deg, ${hexToRgba(result.color, 0.73)}, ${result.color})`;
+
+    // score map
+    const mapRows = document.getElementById('mapRows');
+    mapRows.innerHTML = '';
+    Object.entries(scores).sort((a, b) => b[1] - a[1]).forEach(([key, val]) => {
+      const pct = Math.round((val / 16) * 100);
+      const row = document.createElement('div');
+      row.className = 'map-row';
+      row.innerHTML = `
+        <div class="map-row-top">
+          <span class="name">${labels[key]}</span>
+          <span class="pct">${pct}%</span>
+        </div>
+        <div class="map-track">
+          <div class="map-fill" style="width:${pct}%; background:${archetypes[key].color};"></div>
+        </div>
+      `;
+      mapRows.appendChild(row);
+    });
+  }
+
+  document.getElementById('retakeBtn').addEventListener('click', () => {
+    current = 0;
+    selectedOption = null;
+    scores = { self: 0, emotions: 0, beliefs: 0, relationships: 0, integration: 0 };
+    resultsView.classList.add('hidden');
+    quizView.classList.remove('hidden');
+    renderQuestion();
+  });
+
+  renderQuestion();
+</script>
+
+</body>
+</html>
